@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2D Craft Sandbox</title>
+    <style>
+        body { margin: 0; background: #0f172a; color: white; font-family: sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; overflow: hidden; }
+        #canvasContainer { border: 4px solid #4ade80; border-radius: 8px; background: #7dd3fc; position: relative; }
+        canvas { display: block; }
+        .toolbar { margin-top: 15px; display: flex; gap: 10px; }
+        .tool { padding: 10px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; border: none; }
+        .grass { background: #22c55e; color: white; }
+        .dirt { background: #78350f; color: white; }
+        .stone { background: #64748b; color: white; }
+        .active { outline: 3px solid white; }
+    </style>
+</head>
+<body>
+    <h3>2D Craft Pixel Grid Sandbox</h3>
+    <div id="canvasContainer">
+        <canvas id="craftCanvas" width="600" height="400"></canvas>
+    </div>
+    <div class="toolbar">
+        <button class="tool grass active" onclick="selectBlock('grass', this)">Grass Block</button>
+        <button class="tool dirt" onclick="selectBlock('dirt', this)">Dirt Block</button>
+        <button class="tool stone" onclick="selectBlock('stone', this)">Stone Block</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('craftCanvas');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 40;
+        let selectedMaterial = 'grass';
+        let worldGrid = {};
+
+        // Colors mapping for blocks
+        const colors = { grass: '#22c55e', dirt: '#9a3412', stone: '#64748b' };
+
+        // Draw initial setup
+        function drawWorld() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            // Draw background sky sky-blue color configured in CSS
+
+            // Draw placed blocks
+            for (let key in worldGrid) {
+                const [x, y] = key.split(',').map(Number);
+                ctx.fillStyle = colors[worldGrid[key]];
+                ctx.fillRect(x * gridSize, y * gridSize, gridSize, gridSize);
+                ctx.strokeStyle = 'rgba(0,0,0,0.1)';
+                ctx.strokeRect(x * gridSize, y * gridSize, gridSize, gridSize);
+            }
+        }
+
+        // Click to place blocks
+        canvas.addEventListener('click', function(e) {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+            
+            const gridX = Math.floor(clickX / gridSize);
+            const gridY = Math.floor(clickY / gridSize);
+            const key = `${gridX},${gridY}`;
+
+            // Toggle block placement
+            if (worldGrid[key]) {
+                delete worldGrid[key];
+            } else {
+                worldGrid[key] = selectedMaterial;
+            }
+            drawWorld();
+        });
+
+        function selectBlock(material, btn) {
+            selectedMaterial = material;
+            document.querySelectorAll('.tool').forEach(t => t.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // Initialize base terrain
+        for(let x=0; x<15; x++) {
+            worldGrid[`${x},8`] = 'grass';
+            worldGrid[`${x},9`] = 'dirt';
+        }
+        drawWorld();
+    </script>
+</body>
+</html>
